@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Frequency Fingerprint (Java Scanner Backend)</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f5f5f7; padding: 24px; }
+    .container { width: 100%; max-width: 720px; display: flex; flex-direction: column; gap: 20px; }
+    .input-wrapper { display: flex; background: #fff; border: 1px solid #e0e0e0; border-radius: 24px; padding: 6px 6px 6px 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .input-field { flex: 1; border: none; outline: none; font-size: 16px; }
+    .send-btn { background: #0071e3; color: #fff; border: none; border-radius: 18px; padding: 10px 20px; font-weight: 500; cursor: pointer; }
+    .card { background: #fff; border: 1px solid #e0e0e0; border-radius: 16px; padding: 24px; }
+    .chart-container { display: flex; align-items: flex-end; gap: 6px; height: 220px; padding-top: 30px; border-bottom: 2px solid #e0e0e0; }
+    .bar-wrapper { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+    .bar { width: 100%; background: #0071e3; border-radius: 4px 4px 0 0; min-height: 2px; transition: height 0.3s; position: relative; }
+    .bar-value { position: absolute; top: -22px; width: 100%; text-align: center; font-size: 11px; font-weight: 600; color: #555; }
+    .bar-label { margin-top: 8px; font-size: 12px; font-weight: 600; color: #6e6e73; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="input-wrapper">
+      <input type="text" id="userInput" class="input-field" placeholder="Enter a string..." />
+      <button id="sendBtn" class="send-btn">Create Fingerprint</button>
+    </div>
+
+    <div class="card">
+      <h2 style="font-size: 18px; margin-bottom: 20px;">Frequency Fingerprint</h2>
+      <div id="chart" class="chart-container"></div>
+    </div>
+  </div>
+
+  <script>
+    function renderChart(freqData) {
+      const chartContainer = document.getElementById('chart');
+      chartContainer.innerHTML = '';
+      
+      const values = Object.values(freqData);
+      const maxVal = Math.max(...values, 1);
+
+      for (let i = 0; i < 26; i++) {
+        const char = String.fromCharCode(65 + i);
+        const count = freqData[char] || 0;
+        const heightPercent = (count / maxVal) * 100;
+
+        const barWrapper = document.createElement('div');
+        barWrapper.className = 'bar-wrapper';
+        barWrapper.innerHTML = `
+          <div class="bar" style="height: ${heightPercent}%;">
+            ${count > 0 ? `<span class="bar-value">${count}</span>` : ''}
+          </div>
+          <span class="bar-label">${char}</span>
+        `;
+        chartContainer.appendChild(barWrapper);
+      }
+    }
+
+    async function handleExecution() {
+      const text = document.getElementById('userInput').value;
+      
+      const response = await fetch('/process', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
+      
+      const freqData = await response.json();
+      renderChart(freqData);
+    }
+
+    document.getElementById('sendBtn').addEventListener('click', handleExecution);
+    document.getElementById('userInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handleExecution();
+    });
+
+    // Render empty chart initially
+    const initialData = {};
+    for (let i = 0; i < 26; i++) initialData[String.fromCharCode(65 + i)] = 0;
+    renderChart(initialData);
+  </script>
+
+</body>
+</html>
