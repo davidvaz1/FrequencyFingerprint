@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Frequency Fingerprint (Java Scanner Backend)</title>
+  <title>Frequency Fingerprint</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
     body { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f5f5f7; padding: 24px; }
@@ -28,16 +28,17 @@
     </div>
 
     <div class="card">
-      <h2 style="font-size: 18px; margin-bottom: 20px;">Frequency Fingerprint</h2>
+      <h2 style="font-size: 18px; margin-bottom: 20px;">Frequency Fingerprint Output</h2>
       <div id="chart" class="chart-container"></div>
     </div>
+    <div><footer>Created with ☕ using HTML, Python and Java</footer></div>
   </div>
+  
 
   <script>
     function renderChart(freqData) {
       const chartContainer = document.getElementById('chart');
       chartContainer.innerHTML = '';
-      
       const values = Object.values(freqData);
       const maxVal = Math.max(...values, 1);
 
@@ -60,13 +61,11 @@
 
     async function handleExecution() {
       const text = document.getElementById('userInput').value;
-      
       const response = await fetch('/process', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text })
       });
-      
       const freqData = await response.json();
       renderChart(freqData);
     }
@@ -76,11 +75,11 @@
       if (e.key === 'Enter') handleExecution();
     });
 
-    // Render empty chart initially
     const initialData = {};
     for (let i = 0; i < 26; i++) initialData[String.fromCharCode(65 + i)] = 0;
     renderChart(initialData);
   </script>
 
 </body>
+  
 </html>
